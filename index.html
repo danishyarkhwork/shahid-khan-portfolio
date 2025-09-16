@@ -64,6 +64,12 @@
     <!-- Lucide Icons (CDN) -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
+    <!-- EmailJS -->
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+    ></script>
+
     <!-- Nice smooth scroll behavior for anchor links (fallback to JS too) -->
     <style>
       html {
@@ -678,6 +684,42 @@
             >
               <h3 class="text-2xl font-bold mb-6">Send Me a Message</h3>
               <form id="contactForm" class="space-y-6">
+                <!-- Success Message -->
+                <div
+                  id="successMessage"
+                  class="hidden bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg"
+                >
+                  <div class="flex items-center gap-2">
+                    <i
+                      data-lucide="check-circle"
+                      class="w-5 h-5 text-green-600"
+                    ></i>
+                    <span class="font-medium">Message sent successfully!</span>
+                  </div>
+                  <p class="text-sm mt-1">
+                    Thank you for your message. I'll get back to you within 24
+                    hours.
+                  </p>
+                </div>
+
+                <!-- Error Message -->
+                <div
+                  id="errorMessage"
+                  class="hidden bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg"
+                >
+                  <div class="flex items-center gap-2">
+                    <i
+                      data-lucide="alert-circle"
+                      class="w-5 h-5 text-red-600"
+                    ></i>
+                    <span class="font-medium">Error sending message</span>
+                  </div>
+                  <p class="text-sm mt-1">
+                    Please try again or contact me directly at
+                    shahidsalih2222@gmail.com
+                  </p>
+                </div>
+
                 <div class="grid md:grid-cols-2 gap-4">
                   <div>
                     <label
@@ -690,9 +732,13 @@
                       id="name"
                       name="name"
                       required
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       placeholder="Your full name"
                     />
+                    <div
+                      id="nameError"
+                      class="hidden text-red-600 text-sm mt-1"
+                    ></div>
                   </div>
                   <div>
                     <label
@@ -705,9 +751,13 @@
                       id="email"
                       name="email"
                       required
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       placeholder="your@email.com"
                     />
+                    <div
+                      id="emailError"
+                      class="hidden text-red-600 text-sm mt-1"
+                    ></div>
                   </div>
                 </div>
 
@@ -722,9 +772,13 @@
                     id="subject"
                     name="subject"
                     required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="What can I help you with?"
                   />
+                  <div
+                    id="subjectError"
+                    class="hidden text-red-600 text-sm mt-1"
+                  ></div>
                 </div>
 
                 <div>
@@ -738,17 +792,44 @@
                     name="message"
                     required
                     rows="5"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
                     placeholder="Tell me about your project..."
                   ></textarea>
+                  <div
+                    id="messageError"
+                    class="hidden text-red-600 text-sm mt-1"
+                  ></div>
                 </div>
 
                 <button
                   type="submit"
-                  class="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2"
+                  id="submitBtn"
+                  class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white px-8 py-4 rounded-lg font-semibold shadow-lg flex items-center justify-center gap-2 transition-colors"
                 >
-                  <i data-lucide="send" class="w-5 h-5"></i>
-                  Send Message
+                  <i data-lucide="send" class="w-5 h-5" id="sendIcon"></i>
+                  <span id="submitText">Send Message</span>
+                  <div id="loadingSpinner" class="hidden">
+                    <svg
+                      class="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  </div>
                 </button>
               </form>
             </div>
@@ -794,13 +875,18 @@
 
     <!-- App JS -->
     <script>
-      // Initialize Lucide icons
+      // Initialize Lucide icons and EmailJS
       document.addEventListener("DOMContentLoaded", () => {
         if (window.lucide && window.lucide.createIcons) {
           window.lucide.createIcons();
         }
         const yearEl = document.getElementById("currentYear");
         if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+        // Initialize EmailJS
+        if (window.emailjs) {
+          emailjs.init("YOUR_EMAILJS_USER_ID"); // Replace with your EmailJS user ID
+        }
       });
 
       // Mobile menu toggle
@@ -944,14 +1030,173 @@
 
       // Contact form handling
       const form = document.getElementById("contactForm");
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-        console.log("Form submitted:", data);
-        // clear form
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const sendIcon = document.getElementById("sendIcon");
+      const loadingSpinner = document.getElementById("loadingSpinner");
+      const successMessage = document.getElementById("successMessage");
+      const errorMessage = document.getElementById("errorMessage");
+
+      // Form validation
+      function validateForm() {
+        let isValid = true;
+        const fields = ["name", "email", "subject", "message"];
+
+        fields.forEach((fieldName) => {
+          const field = document.getElementById(fieldName);
+          const errorDiv = document.getElementById(fieldName + "Error");
+          const value = field.value.trim();
+
+          // Clear previous error
+          errorDiv.classList.add("hidden");
+          field.classList.remove("border-red-500");
+          field.classList.add("border-gray-300");
+
+          // Validate field
+          if (!value) {
+            showFieldError(field, errorDiv, "This field is required");
+            isValid = false;
+          } else if (fieldName === "email" && !isValidEmail(value)) {
+            showFieldError(
+              field,
+              errorDiv,
+              "Please enter a valid email address"
+            );
+            isValid = false;
+          } else if (fieldName === "message" && value.length < 10) {
+            showFieldError(
+              field,
+              errorDiv,
+              "Message must be at least 10 characters long"
+            );
+            isValid = false;
+          }
+        });
+
+        return isValid;
+      }
+
+      function showFieldError(field, errorDiv, message) {
+        field.classList.remove("border-gray-300");
+        field.classList.add("border-red-500");
+        errorDiv.textContent = message;
+        errorDiv.classList.remove("hidden");
+      }
+
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      function showLoading() {
+        submitBtn.disabled = true;
+        sendIcon.classList.add("hidden");
+        submitText.textContent = "Sending...";
+        loadingSpinner.classList.remove("hidden");
+      }
+
+      function hideLoading() {
+        submitBtn.disabled = false;
+        sendIcon.classList.remove("hidden");
+        submitText.textContent = "Send Message";
+        loadingSpinner.classList.add("hidden");
+      }
+
+      function showSuccess() {
+        successMessage.classList.remove("hidden");
+        errorMessage.classList.add("hidden");
         form.reset();
-        // simple feedback
-        alert("Thanks! Your message has been sent.");
+        // Scroll to success message
+        successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      function showError() {
+        errorMessage.classList.remove("hidden");
+        successMessage.classList.add("hidden");
+        // Scroll to error message
+        errorMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      function hideMessages() {
+        successMessage.classList.add("hidden");
+        errorMessage.classList.add("hidden");
+      }
+
+      // Form submission
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Hide previous messages
+        hideMessages();
+
+        // Validate form
+        if (!validateForm()) {
+          return;
+        }
+
+        // Show loading state
+        showLoading();
+
+        try {
+          // Prepare email parameters
+          const templateParams = {
+            from_name: document.getElementById("name").value,
+            from_email: document.getElementById("email").value,
+            subject: document.getElementById("subject").value,
+            message: document.getElementById("message").value,
+            to_email: "shahidsalih2222@gmail.com", // Your email address
+          };
+
+          // Send email using EmailJS
+          const response = await emailjs.send(
+            "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
+            "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
+            templateParams
+          );
+
+          if (response.status === 200) {
+            showSuccess();
+          } else {
+            throw new Error("Email sending failed");
+          }
+        } catch (error) {
+          console.error("Form submission error:", error);
+          showError();
+        } finally {
+          hideLoading();
+        }
+      });
+
+      // Real-time validation on input
+      const inputs = form.querySelectorAll("input, textarea");
+      inputs.forEach((input) => {
+        input.addEventListener("blur", () => {
+          const fieldName = input.id;
+          const errorDiv = document.getElementById(fieldName + "Error");
+          const value = input.value.trim();
+
+          // Clear error styling
+          errorDiv.classList.add("hidden");
+          input.classList.remove("border-red-500");
+          input.classList.add("border-gray-300");
+
+          // Validate on blur
+          if (value) {
+            if (fieldName === "email" && !isValidEmail(value)) {
+              showFieldError(
+                input,
+                errorDiv,
+                "Please enter a valid email address"
+              );
+            } else if (fieldName === "message" && value.length < 10) {
+              showFieldError(
+                input,
+                errorDiv,
+                "Message must be at least 10 characters long"
+              );
+            }
+          }
+        });
       });
     </script>
   </body>
